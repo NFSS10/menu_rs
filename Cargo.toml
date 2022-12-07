@@ -2,6 +2,8 @@
 name = "menu_rs"
 version = "0.1.0"
 edition = "2021"
+description = "A simple command line menu"
+license-file = "LICENSE"
 
 [dependencies]
 console = "0.15.2"

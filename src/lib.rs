@@ -24,6 +24,9 @@
 //! menu.show();
 //! ```
 
+#![allow(clippy::needless_return)]
+#![allow(clippy::redundant_field_names)]
+
 use console::{Key, Style, Term};
 
 /// A option that can be added to a Menu.

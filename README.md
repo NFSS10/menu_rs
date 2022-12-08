@@ -6,6 +6,8 @@ It's very simple to use, you just create a Menu, adds the option you want it to 
 action to be run when selected and that's it!
 You can use the arrow keys to move through the options, ENTER to select an option and ESC to exit the menu.
 
+![menu_example](https://user-images.githubusercontent.com/22588915/206564880-1e3c89e6-8b84-4ded-8b93-bd0fa7271562.gif)
+
 ### Example
 
 ```rust

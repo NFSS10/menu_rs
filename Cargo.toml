@@ -2,9 +2,15 @@
 name = "menu_rs"
 version = "0.2.0"
 edition = "2021"
+keywords = ["menu", "terminal", "console", "cli"]
 authors = ["NFSS10"]
 description = "A simple command line menu"
+license = "Apache-2.0"
 license-file = "LICENSE"
+homepage = "https://github.com/NFSS10/menu_rs"
+repository = "https://github.com/NFSS10/menu_rs"
+documentation = "https://docs.rs/menu_rs"
+readme = "README.md"
 
 [dependencies]
 console = "0.15.2"

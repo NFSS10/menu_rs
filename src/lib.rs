@@ -27,7 +27,7 @@
 #![allow(clippy::needless_return)]
 #![allow(clippy::redundant_field_names)]
 
-use console::{Key, Style, Term};
+use console::{Key, Style, Term, style};
 
 /// A option that can be added to a Menu.
 pub struct MenuOption {
@@ -38,6 +38,7 @@ pub struct MenuOption {
 
 /// The Menu to be shown in the command line interface.
 pub struct Menu {
+    title: Option<String>,
     options: Vec<MenuOption>,
     selected_option: usize,
     selected_style: Style,
@@ -58,7 +59,7 @@ impl MenuOption {
     pub fn new(label: &str, func: fn() -> ()) -> MenuOption {
         return MenuOption {
             label: label.to_owned(),
-            func: func,
+            func,
             hint: None,
         };
     }
@@ -88,7 +89,8 @@ impl Menu {
     /// ```
     pub fn new(options: Vec<MenuOption>) -> Menu {
         return Menu {
-            options: options,
+            title: None,
+            options,
             selected_option: 0,
             normal_style: Style::new(),
             selected_style: Style::new().on_blue(),
@@ -114,6 +116,11 @@ impl Menu {
         stdout.clear_screen().unwrap();
         stdout.flush().unwrap();
         (self.action_func)();
+    }
+
+    pub fn title(mut self, text: &str) -> Menu {
+        self.title = Some(text.to_owned());
+        self
     }
 
     fn menu_navigation(&mut self, stdout: &Term) {
@@ -159,6 +166,15 @@ impl Menu {
     fn draw_menu(&self, stdout: &Term) {
         // clears the screen
         stdout.clear_screen().unwrap();
+
+        // draw title
+        match &self.title {
+            Some(text) => {
+                let title_line = format!("  {}", style(text).bold());
+                stdout.write_line(&title_line.as_str()).unwrap()
+            },
+            None => {},
+        };
 
         // draw the menu to stdout
         for (i, option) in self.options.iter().enumerate() {

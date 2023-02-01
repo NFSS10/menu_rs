@@ -149,9 +149,10 @@ impl Menu {
                         false => self.selected_option + 1,
                     }
                 }
-                Key::Escape => return,
+                Key::Escape => {stdout.show_cursor().unwrap(); return},
                 Key::Enter => {
                     self.action_func = self.options[self.selected_option].func;
+                    stdout.show_cursor().unwrap();
                     return;
                 }
                 // Key::Char(c) => println!("char {}", c),

@@ -38,6 +38,7 @@ pub struct MenuOption {
 
 /// The Menu to be shown in the command line interface.
 pub struct Menu {
+    title: Option<String>,
     options: Vec<MenuOption>,
     selected_option: usize,
     selected_style: Style,
@@ -88,6 +89,7 @@ impl Menu {
     /// ```
     pub fn new(options: Vec<MenuOption>) -> Menu {
         return Menu {
+            title: None,
             options: options,
             selected_option: 0,
             normal_style: Style::new(),
@@ -95,6 +97,12 @@ impl Menu {
             hint_style: Style::new().color256(187),
             action_func: dummy_func,
         };
+    }
+
+    // Sets a title for the menu.
+    pub fn title(mut self, text: &str) -> Menu {
+        self.title = Some(text.to_owned());
+        return self;
     }
 
     /// Shows the menu in the command line interface allowing the user
@@ -142,9 +150,13 @@ impl Menu {
                         false => self.selected_option + 1,
                     }
                 }
-                Key::Escape => return,
+                Key::Escape => {
+                    stdout.show_cursor().unwrap();
+                    return;
+                }
                 Key::Enter => {
                     self.action_func = self.options[self.selected_option].func;
+                    stdout.show_cursor().unwrap();
                     return;
                 }
                 // Key::Char(c) => println!("char {}", c),
@@ -159,6 +171,17 @@ impl Menu {
     fn draw_menu(&self, stdout: &Term) {
         // clears the screen
         stdout.clear_screen().unwrap();
+
+        // draw title
+        match &self.title {
+            Some(text) => {
+                let title_style = Style::new().bold();
+                let title = title_style.apply_to(text);
+                let title = format!("  {}", title);
+                stdout.write_line(title.as_str()).unwrap()
+            }
+            None => {}
+        };
 
         // draw the menu to stdout
         for (i, option) in self.options.iter().enumerate() {

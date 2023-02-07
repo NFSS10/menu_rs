@@ -27,7 +27,7 @@
 #![allow(clippy::needless_return)]
 #![allow(clippy::redundant_field_names)]
 
-use console::{Key, Style, Term, style};
+use console::{Key, Style, Term};
 
 /// A option that can be added to a Menu.
 pub struct MenuOption {
@@ -59,7 +59,7 @@ impl MenuOption {
     pub fn new(label: &str, func: fn() -> ()) -> MenuOption {
         return MenuOption {
             label: label.to_owned(),
-            func,
+            func: func,
             hint: None,
         };
     }
@@ -90,13 +90,19 @@ impl Menu {
     pub fn new(options: Vec<MenuOption>) -> Menu {
         return Menu {
             title: None,
-            options,
+            options: options,
             selected_option: 0,
             normal_style: Style::new(),
             selected_style: Style::new().on_blue(),
             hint_style: Style::new().color256(187),
             action_func: dummy_func,
         };
+    }
+
+    // Sets a title for the menu.
+    pub fn title(mut self, text: &str) -> Menu {
+        self.title = Some(text.to_owned());
+        return self;
     }
 
     /// Shows the menu in the command line interface allowing the user
@@ -116,11 +122,6 @@ impl Menu {
         stdout.clear_screen().unwrap();
         stdout.flush().unwrap();
         (self.action_func)();
-    }
-
-    pub fn title(mut self, text: &str) -> Menu {
-        self.title = Some(text.to_owned());
-        self
     }
 
     fn menu_navigation(&mut self, stdout: &Term) {
@@ -149,7 +150,10 @@ impl Menu {
                         false => self.selected_option + 1,
                     }
                 }
-                Key::Escape => {stdout.show_cursor().unwrap(); return},
+                Key::Escape => {
+                    stdout.show_cursor().unwrap();
+                    return;
+                }
                 Key::Enter => {
                     self.action_func = self.options[self.selected_option].func;
                     stdout.show_cursor().unwrap();
@@ -171,10 +175,12 @@ impl Menu {
         // draw title
         match &self.title {
             Some(text) => {
-                let title_line = format!("  {}", style(text).bold());
-                stdout.write_line(&title_line.as_str()).unwrap()
-            },
-            None => {},
+                let title_style = Style::new().bold();
+                let title = title_style.apply_to(text);
+                let title = format!("  {}", title);
+                stdout.write_line(title.as_str()).unwrap()
+            }
+            None => {}
         };
 
         // draw the menu to stdout

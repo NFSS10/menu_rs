@@ -9,15 +9,23 @@
 //! ```
 //! use menu_rs::{Menu, MenuOption};
 //!
-//! fn action_1() {}
-//! fn action_2() {}
-//! fn action_3() {}
-//! fn action_4() {}
+//! fn action_1() {
+//!     println!("action 1")
+//! }
+//! fn action_2(val: u32) {
+//!     println!("action 2 with number {}", val)
+//! }
+//! fn action_3(msg: &str, val: f32) {
+//!     println!("action 3 with string {} and float {}", msg, val)
+//! }
+//! fn action_4() {
+//!     println!("action 4")
+//! }
 //!
 //! let menu = Menu::new(vec![
 //!     MenuOption::new("Option 1", action_1).hint("Hint for option 1"),
-//!     MenuOption::new("Option 2", action_2),
-//!     MenuOption::new("Option 3", action_3),
+//!     MenuOption::new("Option 2", || action_2(42)),
+//!     MenuOption::new("Option 3", || action_3("example", 3.14)),
 //!     MenuOption::new("Option 4", action_4),
 //! ]);
 //!
@@ -81,11 +89,22 @@ impl MenuOption {
 impl Menu {
     /// Creates a new interactable Menu.
     ///
-    /// # Example
+    /// # Examples
     ///
     /// ```
     /// fn action_example() {}
     /// let menu_option = MenuOption::new("Option example", action_example);
+    /// let menu = Menu::new(vec![menu_option]);
+    /// ```
+    ///
+    /// You can use closures to easily use arguments in your functions.
+    ///
+    /// ```
+    /// fn action_example(msg: &str, val: f32) {
+    ///     println!("action 3 with string {} and float {}", msg, val)
+    /// }
+    /// let menu_option = MenuOption::new("Option example", || action_example("example", 3.514));
+    /// let menu = Menu::new(vec![menu_option]);
     /// ```
     pub fn new(options: Vec<MenuOption>) -> Menu {
         return Menu {
@@ -99,7 +118,15 @@ impl Menu {
         };
     }
 
-    // Sets a title for the menu.
+    /// Sets a title for the menu.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// fn action_example() {}
+    /// let menu_option = MenuOption::new("Option example", action_example);
+    /// let menu = Menu::new(vec![menu_option]).title("Title example");
+    /// ```
     pub fn title(mut self, text: &str) -> Menu {
         self.title = Some(text.to_owned());
         return self;

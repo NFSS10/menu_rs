@@ -9,6 +9,8 @@
 //! ```
 //! use menu_rs::{Menu, MenuOption};
 //!
+//! let my_variable: u32 = 157;
+//!
 //! fn action_1() {
 //!     println!("action 1")
 //! }
@@ -27,6 +29,7 @@
 //!     MenuOption::new("Option 2", || action_2(42)),
 //!     MenuOption::new("Option 3", || action_3("example", 3.14)),
 //!     MenuOption::new("Option 4", action_4),
+//!     MenuOption::new("Option 5", move || action_2(my_variable)),
 //! ]);
 //!
 //! menu.show();
@@ -40,7 +43,7 @@ use console::{Key, Style, Term};
 /// A option that can be added to a Menu.
 pub struct MenuOption {
     label: String,
-    func: fn() -> (),
+    func: Box<dyn FnMut()>,
     hint: Option<String>,
 }
 
@@ -48,11 +51,10 @@ pub struct MenuOption {
 pub struct Menu {
     title: Option<String>,
     options: Vec<MenuOption>,
-    selected_option: usize,
+    selected_option: i32,
     selected_style: Style,
     normal_style: Style,
     hint_style: Style,
-    action_func: fn() -> (),
 }
 
 impl MenuOption {
@@ -64,10 +66,13 @@ impl MenuOption {
     /// fn action_example() {}
     /// let menu_option = MenuOption::new("Option example", action_example);
     /// ```
-    pub fn new(label: &str, func: fn() -> ()) -> MenuOption {
+    pub fn new<F>(label: &str, func: F) -> MenuOption
+    where
+        F: FnMut() + 'static,
+    {
         return MenuOption {
             label: label.to_owned(),
-            func: func,
+            func: Box::new(func),
             hint: None,
         };
     }
@@ -114,7 +119,6 @@ impl Menu {
             normal_style: Style::new(),
             selected_style: Style::new().on_blue(),
             hint_style: Style::new().color256(187),
-            action_func: dummy_func,
         };
     }
 
@@ -148,11 +152,19 @@ impl Menu {
         // clears the screen and runs the action function before exiting
         stdout.clear_screen().unwrap();
         stdout.flush().unwrap();
-        (self.action_func)();
+
+        // return on exit selection
+        if self.selected_option == -1 {
+            return;
+        }
+
+        // runs the action function
+        let option = &mut self.options[self.selected_option as usize];
+        (option.func)();
     }
 
     fn menu_navigation(&mut self, stdout: &Term) {
-        let options_limit_num = self.options.len() - 1;
+        let options_limit_num: i32 = (self.options.len() - 1) as i32;
         loop {
             // gets pressed key
             let key = match stdout.read_key() {
@@ -178,11 +190,11 @@ impl Menu {
                     }
                 }
                 Key::Escape => {
+                    self.selected_option = -1;
                     stdout.show_cursor().unwrap();
                     return;
                 }
                 Key::Enter => {
-                    self.action_func = self.options[self.selected_option].func;
                     stdout.show_cursor().unwrap();
                     return;
                 }
@@ -212,7 +224,8 @@ impl Menu {
 
         // draw the menu to stdout
         for (i, option) in self.options.iter().enumerate() {
-            let label_style = match i == self.selected_option {
+            let option_idx: usize = self.selected_option as usize;
+            let label_style = match i == option_idx {
                 true => self.selected_style.clone(),
                 false => self.normal_style.clone(),
             };
@@ -234,5 +247,3 @@ impl Menu {
         stdout.flush().unwrap();
     }
 }
-
-fn dummy_func() {}

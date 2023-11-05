@@ -9,6 +9,8 @@
 //! ```
 //! use menu_rs::{Menu, MenuOption};
 //!
+//! let my_variable: u32 = 157;
+//!
 //! fn action_1() {
 //!     println!("action 1")
 //! }
@@ -27,6 +29,7 @@
 //!     MenuOption::new("Option 2", || action_2(42)),
 //!     MenuOption::new("Option 3", || action_3("example", 3.14)),
 //!     MenuOption::new("Option 4", action_4),
+//!     MenuOption::new("Option 5", move || action_2(my_variable)),
 //! ]);
 //!
 //! menu.show();
